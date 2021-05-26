@@ -1,5 +1,6 @@
 import asyncio
 import random
+import uuid
 
 import async_timeout
 import pytest
@@ -22,6 +23,15 @@ MULTIPLE_TEST_HOSTS = [
     "redis://localhost:6379/8",
     "redis://localhost:6379/9",
 ]
+
+
+class UUIDRedisChannelLayer(RedisChannelLayer):
+
+    def default_serialize(self, value):
+        if isinstance(value, uuid.UUID):
+            return str(value)
+
+        return super().default_serialize(value)
 
 
 async def send_three_messages_with_delay(channel_name, channel_layer, delay):
@@ -641,3 +651,19 @@ def test_receive_buffer_respects_capacity():
     assert buff.qsize() == capacity
     messages = [buff.get_nowait() for _ in range(capacity)]
     assert list(range(9900, 10000)) == messages
+
+
+def test_default_serialize():
+    channel_layer = RedisChannelLayer()
+    value = uuid.UUID("12345678-1234-5678-1234-567812345678")
+    with pytest.raise(TypeError):
+        channel_layer.default_serialize(value)
+
+    with pytest.raise(TypeError):
+        channel_layer.serialize({"value": value})
+
+    channel_layer = UUIDRedisChannelLayer()
+    packed_message = channel_layer.serialize({"value": value})
+    assert channel_layer.deserialize(packed_message) == {"value": "12345678-1234-5678-1234-567812345678"}
+
+
