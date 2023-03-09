@@ -701,3 +701,21 @@ def test_deserialize():
 
     assert isinstance(deserialized, dict)
     assert deserialized == {"a": True, "b": None, "c": {"d": []}}
+
+
+def test_close_connection_pools_on_loop_close(channel_layer):
+    """
+    Regression test for
+
+    https://github.com/django/channels_redis/issues/332
+    """
+    channel_layer = RedisChannelLayer(hosts=TEST_HOSTS)
+
+    async def send(channel, message):
+        await channel_layer.send(channel, message)
+
+    channel_name_1 = async_to_sync(channel_layer.new_channel)()
+    # send message in a different threadf
+    async_to_sync(send)(channel_name_1, {"type": "test.message.1"})
+    # close from an other thread
+    async_to_sync(channel_layer.close_pools)()
