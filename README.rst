@@ -65,9 +65,23 @@ Possible options for ``CONFIG`` are listed below.
 ``hosts``
 ~~~~~~~~~
 
-The server(s) to connect to, as either URIs, ``(host, port)`` tuples, or dicts conforming to `redis Connection <https://redis-py.readthedocs.io/en/v4.3.3/connections.html#redis.connection.Connection>`_.
+The server(s) to connect to, as either URIs, ``(host, port)`` tuples, or dicts conforming to `redis Connection <https://redis-py.readthedocs.io/en/stable/connections.html#async-client>`_.
 Defaults to ``redis://localhost:6379``. Pass multiple hosts to enable sharding,
 but note that changing the host list will lose some sharded data.
+
+SSL connections that are self-signed (ex: Heroku):
+
+.. code-block:: python
+
+    "default": {
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {    
+            "hosts":[{
+                "address": "rediss://user@host:port",  # "REDIS_TLS_URL"
+                "ssl_cert_reqs": None,
+            }]
+        }
+    }
 
 Sentinel connections require dicts conforming to:
 
@@ -158,9 +172,9 @@ argument; channels will then be matched in the order the dict provides them.
 
 Pass this to enable the optional symmetric encryption mode of the backend. To
 use it, make sure you have the ``cryptography`` package installed, or specify
-the ``cryptography`` extra when you install ``channels_redis``::
+the ``cryptography`` extra when you install ``channels-redis``::
 
-    pip install channels_redis[cryptography]
+    pip install channels-redis[cryptography]
 
 ``symmetric_encryption_keys`` should be a list of strings, with each string
 being an encryption key. The first key is always used for encryption; all are
@@ -222,7 +236,7 @@ And then in your channels consumer, you can implement the handler:
 Dependencies
 ------------
 
-Redis server >= 5.0 is required for `channels_redis`. Python 3.7 or higher is required.
+Redis server >= 5.0 is required for `channels-redis`. Python 3.8 or higher is required.
 
 
 Used commands
