@@ -107,6 +107,27 @@ sharding.
 If your server is listening on a UNIX domain socket, you can also use that to connect: ``["unix:///path/to/redis.sock"]``.
 This should be slightly faster than a loopback TCP connection.
 
+Cluster connections require dicts conforming to:
+
+.. code-block:: python
+
+    "default": {
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {
+            "hosts":[{
+                "cluster_mode": True,
+                "startup_nodes": [
+                    ("host", 6379),
+                    ...
+                ],
+                # other configs here
+                "ssl_cert_reqs": ...,
+            }]
+        }
+    }
+
+note that ``startup_nodes`` is not mandatory if you provide an ``host`` key in this config. Remember that redis cluster supports only a single database.
+
 ``prefix``
 ~~~~~~~~~~
 

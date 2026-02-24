@@ -6,8 +6,6 @@ import logging
 import time
 import uuid
 
-from redis import asyncio as aioredis
-
 from channels.exceptions import ChannelFull
 from channels.layers import BaseChannelLayer
 
@@ -18,6 +16,7 @@ from .utils import (
     _wrap_close,
     create_pool,
     decode_hosts,
+    ensure_redis_client,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,7 +80,7 @@ class RedisLoopLayer:
     def get_connection(self, index):
         if index not in self._connections:
             pool = self.channel_layer.create_pool(index)
-            self._connections[index] = aioredis.Redis(connection_pool=pool)
+            self._connections[index] = ensure_redis_client(pool)
 
         return self._connections[index]
 

@@ -3,8 +3,6 @@ import functools
 import logging
 import uuid
 
-from redis import asyncio as aioredis
-
 from .serializers import registry
 from .utils import (
     _close_redis,
@@ -12,6 +10,7 @@ from .utils import (
     _wrap_close,
     create_pool,
     decode_hosts,
+    ensure_redis_client,
 )
 
 logger = logging.getLogger(__name__)
@@ -343,7 +342,7 @@ class RedisSingleShardConnection:
     def _ensure_redis(self):
         if self._redis is None:
             pool = create_pool(self.host)
-            self._redis = aioredis.Redis(connection_pool=pool)
+            self._redis = ensure_redis_client(pool)
             self._pubsub = self._redis.pubsub()
 
     def _ensure_receiver(self):
